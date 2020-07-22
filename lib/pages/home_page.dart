@@ -6,10 +6,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final TextEditingController typeController = new TextEditingController();
+  String showText = "showText";
   @override
   Widget build(BuildContext context) {
-    final TextEditingController typeController = new TextEditingController();
-    final showText = "showText";
     return Container(
       child: Scaffold(
         appBar: AppBar(
@@ -29,14 +29,7 @@ class _HomePageState extends State<HomePage> {
                 onChanged: _onChanged,
               ),
               RaisedButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      child: new AlertDialog(
-                        title: new Text("美女类型"),
-                        content: new Text(typeController.text),
-                      ));
-                },
+                onPressed: _choiceAction,
                 child: Text("选择完毕"),
               ),
               Text(
@@ -50,7 +43,34 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
   void _onChanged(String value) {
     print(value);
+  }
+
+  void _choiceAction() {
+    print("开始选择你喜欢的类型");
+    if (typeController.text.toString() == "") {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text("美女类型不能为空"),
+              ));
+    } else {
+      getHttp(typeController.text.toString()).then((value) => setState(() {
+            showText = value.toString();
+          }));
+    }
+  }
+  Future getHttp(String TypeText) async {
+    final path = "https://mock.yonyoucloud.com/mock/11996/getUserInfo";
+    try {
+      Response response;
+      var data = {"username": TypeText};
+      response = await Dio().get(path, queryParameters: data);
+      return response.data;
+    } catch (e) {
+      return print(e);
+    }
   }
 }
